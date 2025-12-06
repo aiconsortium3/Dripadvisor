@@ -268,7 +268,7 @@
       display: flex;
       gap: 24px;
       margin-top: 12px;
-      align-items: stretch;
+      align-items: center;
     }
 
     .layout-left,
@@ -333,21 +333,15 @@
 
   <!-- TOP BAR -->
   <div class="topbar">
-    <div>
-      <div class="topbar-title">Drip Advisor – Working Demo</div>
-      <div style="font-size: 13px; color:#9ca3af;">
-        Login → Upload Wardrobe → Chatbot suggests outfits
-      </div>
-    </div>
-    <div>
-      <span class="chip" id="userChip">Not logged in</span>
-      <button id="btnLogout" class="btn-secondary"
-              style="margin-left:10px;padding:4px 12px;font-size:12px;display:none;">
-        Logout
-      </button>
-    </div>
+  <div></div>  <!-- left side empty now -->
+  <div>
+    <span class="chip" id="userChip">Not logged in</span>
+    <button id="btnLogout" class="btn-secondary"
+            style="margin-left:10px;padding:4px 12px;font-size:12px;display:none;">
+      Logout
+    </button>
   </div>
-
+</div>
   <!-- AUTH LAYOUT: IMAGE (LEFT) + LOGIN CARD (RIGHT) -->
   <div id="authLayout" class="layout">
 
