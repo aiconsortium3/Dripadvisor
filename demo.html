@@ -143,6 +143,39 @@
       color: #f97316;
     }
 
+    /* CUSTOM FILE UPLOAD BUTTON */
+    .custom-file {
+      position: relative;
+      display: inline-block;
+    }
+    
+    #uploadImage {
+      width: 0.1px;
+      height: 0.1px;
+      opacity: 0;
+      overflow: hidden;
+      position: absolute;
+      z-index: -1;
+    }
+    
+    .custom-file-label {
+      display: inline-block;
+      padding: 12px 20px;       /* BUTTON SIZE */
+      background: #2eb1f2;      /* BUTTON COLOR */
+      color: white;             /* TEXT COLOR */
+      border-radius: 12px;      /* CORNER CURVE */
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+    
+    .custom-file-label:hover {
+      background: #1ba0df;      /* HOVER COLOR */
+      transform: translateY(-1px);
+    }
+
+
     .hidden {
       display: none !important;
     }
@@ -395,14 +428,16 @@
     <div class="card">
       <div class="card-header">
         <h2>2. Upload outfits to your wardrobe</h2>
-        <span class="badge">Stored only for this session (demo)</span>
       </div>
 
       <div class="row">
         <div class="col-half">
           <label for="uploadImage">Choose outfit image</label>
+         <div class="custom-file">
+          <label for="uploadImage" class="custom-file-label">Choose File</label>
           <input id="uploadImage" type="file" accept="image/*" />
-
+      </div>
+          
           <label for="uploadCategory">Category</label>
           <select id="uploadCategory">
             <option value="casual">Casual</option>
@@ -434,7 +469,6 @@
     <div class="card">
       <div class="card-header">
         <h2>3. Chatbot – outfit suggestions</h2>
-        <span class="badge">Understands: casual, formal, seasonal, colour names</span>
       </div>
 
       <div class="chat-container" id="chatContainer">
