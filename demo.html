@@ -7,10 +7,10 @@
   <style>
     :root {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #ffffff ;
-      color: #0fc7ff
-      ;
+      background: #ffffff;
+      color: #0fc7ff;
     }
+
     body {
       margin: 0;
       padding: 0;
@@ -263,6 +263,59 @@
       color: #e5e7eb;
     }
 
+    /* LOGIN PAGE LAYOUT (image + form) */
+    .layout {
+      display: flex;
+      gap: 24px;
+      margin-top: 12px;
+      align-items: stretch;
+    }
+
+    .layout-left,
+    .layout-right {
+      flex: 1 1 0;
+    }
+
+    .preview-box {
+      background: #050816;
+      border-radius: 24px;
+      min-height: 450px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-text {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 600;
+      color: #22d3ee;
+    }
+
+    .preview-text span {
+      display: block;
+      font-size: 14px;
+      color: #e5e7eb;
+    }
+
+    .preview-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        flex-direction: column;
+      }
+      .preview-box {
+        min-height: 260px;
+      }
+    }
+
     @media (max-width: 720px) {
       .card {
         border-radius: 12px;
@@ -277,59 +330,76 @@
 </head>
 <body>
 <div class="app">
+
+  <!-- TOP BAR -->
   <div class="topbar">
     <div>
       <div class="topbar-title">Drip Advisor – Working Demo</div>
-     <!-- <div>
-  <span class="chip" id="userChip">Not logged in</span>
-  <button id="btnLogout" class="btn-secondary" style="margin-left:10px;padding:4px 12px;font-size:12px;">
-    Logout
-  </button>
-</div>
-      <!--<div style="font-size: 13px; color:#9ca3af;">
-        Login → Upload Wardrobe → Chatbot suggests outfits (casual / formal / seasonal / colour-specific)
+      <div style="font-size: 13px; color:#9ca3af;">
+        Login → Upload Wardrobe → Chatbot suggests outfits
       </div>
     </div>
     <div>
-  <span class="chip" id="userChip">Not logged in</span>
-  <button id="btnLogout" class="btn-secondary" 
-   style="margin-left:10px;padding:4px 12px;font-size:12px; display:none;">
-    Logout
-  </button>
-</div>-->
-  <!-- AUTH CARD -->
-  <div class="card" id="authCard">
-    <div class="card-header">
-      <h2>1. Login / Registration</h2>
-      <span class="badge">Local demo – stored in this browser</span>
-    </div>
-
-    <div class="row">
-      <div class="col-half">
-        <h3 style="font-size: 15px;">New here? Register</h3>
-        <label for="regName">Name</label>
-        <input id="regName" type="text" placeholder="Aanya" />
-        <label for="regEmail">Email</label>
-        <input id="regEmail" type="email" placeholder="you@example.com" />
-        <label for="regPassword">Password</label>
-        <input id="regPassword" type="password" placeholder="●●●●●●●" />
-        <button id="btnRegister">Register</button>
-        <div class="status" id="regStatus"></div>
-      </div>
-
-      <div class="col-half">
-        <h3 style="font-size: 15px;">Already registered? Login</h3>
-        <label for="loginEmail">Email</label>
-        <input id="loginEmail" type="email" placeholder="you@example.com" />
-        <label for="loginPassword">Password</label>
-        <input id="loginPassword" type="password" placeholder="●●●●●●●" />
-        <button id="btnLogin">Login</button>
-        <div class="status" id="loginStatus"></div>
-      </div>
+      <span class="chip" id="userChip">Not logged in</span>
+      <button id="btnLogout" class="btn-secondary"
+              style="margin-left:10px;padding:4px 12px;font-size:12px;display:none;">
+        Logout
+      </button>
     </div>
   </div>
 
-  <!-- MAIN APP (hidden until login) -->
+  <!-- AUTH LAYOUT: IMAGE (LEFT) + LOGIN CARD (RIGHT) -->
+  <div id="authLayout" class="layout">
+
+    <!-- LEFT: image / illustration -->
+    <div class="layout-left">
+      <div class="preview-box">
+        <!-- later you can replace this with a real image:
+             <img src="assets/mockup.png" class="preview-image" /> -->
+        <div class="preview-text">
+          Your AI Stylist<br/>
+          <span>Upload. Chat. Get outfits.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: login / register card -->
+    <div class="layout-right">
+      <div class="card" id="authCard">
+        <div class="card-header">
+          <h2>1. Login / Registration</h2>
+          <span class="badge">Local demo – stored in this browser</span>
+        </div>
+
+        <div class="row">
+          <div class="col-half">
+            <h3 style="font-size: 15px;">New here? Register</h3>
+            <label for="regName">Name</label>
+            <input id="regName" type="text" placeholder="Aanya" />
+            <label for="regEmail">Email</label>
+            <input id="regEmail" type="email" placeholder="you@example.com" />
+            <label for="regPassword">Password</label>
+            <input id="regPassword" type="password" placeholder="●●●●●●●" />
+            <button id="btnRegister">Register</button>
+            <div class="status" id="regStatus"></div>
+          </div>
+
+          <div class="col-half">
+            <h3 style="font-size: 15px;">Already registered? Login</h3>
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" placeholder="you@example.com" />
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" placeholder="●●●●●●●" />
+            <button id="btnLogin">Login</button>
+            <div class="status" id="loginStatus"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end authLayout -->
+
+  <!-- MAIN APP (FULL WIDTH, NO IMAGE) -->
   <div id="mainApp" class="hidden">
     <!-- UPLOAD + WARDROBE -->
     <div class="card">
@@ -389,66 +459,71 @@
         Demo logic runs fully in the browser. In the actual system, this would call the Flask + Gemini backend.
       </div>
     </div>
-  </div>
-</div>
+  </div> <!-- end mainApp -->
+
+</div> <!-- end app -->
 
 <script>
   const LS_USER_KEY = "dripDemoUser";
 
   let currentUser = null;
-
   let wardrobe = [];
 
   const userChip = document.getElementById("userChip");
   const authCard = document.getElementById("authCard");
+  const authLayout = document.getElementById("authLayout");
   const mainApp = document.getElementById("mainApp");
 
   function refreshAuthUI() {
-  if (currentUser) {
-    userChip.textContent = "Logged in as " + currentUser.name;
-    authCard.classList.add("hidden");
-    mainApp.classList.remove("hidden");
+    if (currentUser) {
+      userChip.textContent = "Logged in as " + currentUser.name;
 
-    // SHOW LOGOUT BUTTON
-    document.getElementById("btnLogout").style.display = "inline-block";
+      // hide login layout + show main app
+      authLayout.classList.add("hidden");
+      mainApp.classList.remove("hidden");
 
-  } else {
-    userChip.textContent = "Not logged in";
-    authCard.classList.remove("hidden");
-    mainApp.classList.add("hidden");
+      // show logout button
+      document.getElementById("btnLogout").style.display = "inline-block";
+    } else {
+      userChip.textContent = "Not logged in";
 
-    // HIDE LOGOUT BUTTON
-    document.getElementById("btnLogout").style.display = "none";
+      // show login layout + hide main app
+      authLayout.classList.remove("hidden");
+      mainApp.classList.add("hidden");
+
+      // hide logout button
+      document.getElementById("btnLogout").style.display = "none";
+    }
   }
-  }
+
   document.getElementById("btnLogout").addEventListener("click", () => {
-  // remove stored user
-  localStorage.removeItem(LS_USER_KEY);
-  currentUser = null;
+    // remove stored user
+    localStorage.removeItem(LS_USER_KEY);
+    currentUser = null;
 
-  // clear wardrobe
-  wardrobe = [];
-  renderWardrobe();
+    // clear wardrobe
+    wardrobe = [];
+    renderWardrobe();
 
-  // clear chat messages
-  chatContainer.innerHTML = "";
+    // clear chat messages
+    chatContainer.innerHTML = "";
 
-  // show initial greeting message again
-  appendMessage(
-    "bot",
-    "Hi! I’m your Drip Advisor stylist.\n" +
-    "1️⃣ Register / login above.\n" +
-    "2️⃣ Upload a few outfits into your wardrobe.\n" +
-    "3️⃣ Then ask me things like:\n" +
-    "   • Suggest a casual outfit\n" +
-    "   • Formal outfit for presentation\n" +
-    "   • Winter outfit\n" +
-    "   • Outfit with red colour"
-  );
+    // show initial greeting message again
+    appendMessage(
+      "bot",
+      "Hi! I’m your Drip Advisor stylist.\n" +
+      "1️⃣ Register / login above.\n" +
+      "2️⃣ Upload a few outfits into your wardrobe.\n" +
+      "3️⃣ Then ask me things like:\n" +
+      "   • Suggest a casual outfit\n" +
+      "   • Formal outfit for presentation\n" +
+      "   • Winter outfit\n" +
+      "   • Outfit with red colour"
+    );
 
-  // update UI
-  refreshAuthUI();
-});
+    // update UI
+    refreshAuthUI();
+  });
 
   (function initAuth() {
     try {
@@ -585,7 +660,6 @@
   const chatInput = document.getElementById("chatInput");
   const btnSend = document.getElementById("btnSend");
 
-  // NEW: supports text-only (user / simple bot) and text+images (outfit suggestions)
   function appendMessage(role, content) {
     const row = document.createElement("div");
     row.className = "msg " + role;
