@@ -425,7 +425,7 @@
         </div>
 
         <div class="col-half">
-          <h3 style="font-size: 15px;">Your Wardrobe (for this demo)</h3>
+          <h3 style="font-size: 15px;">Your Wardrobe</h3>
           <div id="wardrobeEmpty" style="font-size: 13px; color:#9ca3af;">
             No items yet. Upload a few outfits to see them here.
           </div>
@@ -449,9 +449,9 @@
         <textarea id="chatInput" placeholder="Try: ‘Suggest a casual outfit’ or ‘Outfit with red colour’"></textarea>
         <button id="btnSend">Send</button>
       </div>
-      <div style="font-size:11px; color:#9ca3af; margin-top:4px;">
+      <!--<div style="font-size:11px; color:#9ca3af; margin-top:4px;">
         Demo logic runs fully in the browser. In the actual system, this would call the Flask + Gemini backend.
-      </div>
+      </div>-->
     </div>
   </div> <!-- end mainApp -->
 
@@ -751,13 +751,13 @@
     });
 
     if (desiredCategory === "casual") {
-      lines.push("\nStyle tip: keep it relaxed with comfy footwear and minimal accessories.");
+      lines.push("\nStyle tip: Keep it relaxed with comfy footwear and minimal accessories.");
     } else if (desiredCategory === "formal") {
-      lines.push("\nStyle tip: add a watch or structured bag to keep it sharp and professional.");
+      lines.push("\nStyle tip: Add a watch or structured bag to keep it sharp and professional.");
     } else if (desiredSeason === "winter") {
-      lines.push("\nStyle tip: layer with knits or a jacket and keep warm accessories handy.");
+      lines.push("\nStyle tip: Layer with knits or a jacket and keep warm accessories handy.");
     } else if (desiredColor) {
-      lines.push(`\nStyle tip: let the ${desiredColor} piece be the hero and keep other colours neutral.`);
+      lines.push(`\nStyle tip: Let the ${desiredColor} piece be the hero and keep other colours neutral.`);
     }
 
     return {
