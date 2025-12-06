@@ -384,21 +384,16 @@
 </div>
 
 <script>
-  // --- Simple demo "database" using localStorage + in-memory arrays ---
-
   const LS_USER_KEY = "dripDemoUser";
 
-  /** @type {{name:string,email:string,password:string}|null} */
   let currentUser = null;
 
-  /** @type {Array<{id:number, url:string, category:string, color:string, season:string}>} */
   let wardrobe = [];
 
   const userChip = document.getElementById("userChip");
   const authCard = document.getElementById("authCard");
   const mainApp = document.getElementById("mainApp");
 
-  // --- Helper: update UI based on login state ---
   function refreshAuthUI() {
     if (currentUser) {
       userChip.textContent = "Logged in as " + currentUser.name;
@@ -411,7 +406,6 @@
     }
   }
 
-  // --- Load existing user if any (for demo) ---
   (function initAuth() {
     try {
       const raw = localStorage.getItem(LS_USER_KEY);
@@ -424,7 +418,6 @@
     refreshAuthUI();
   })();
 
-  // --- Registration logic ---
   document.getElementById("btnRegister").addEventListener("click", () => {
     const name = document.getElementById("regName").value.trim();
     const email = document.getElementById("regEmail").value.trim();
@@ -447,12 +440,9 @@
 
     status.textContent = "Registered and logged in successfully.";
     status.classList.add("ok");
-
-    // Optionally clear inputs
     document.getElementById("regPassword").value = "";
   });
 
-  // --- Login logic ---
   document.getElementById("btnLogin").addEventListener("click", () => {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
@@ -486,7 +476,6 @@
     }
   });
 
-  // --- Wardrobe UI update ---
   const wardrobeGrid = document.getElementById("wardrobeGrid");
   const wardrobeEmpty = document.getElementById("wardrobeEmpty");
 
@@ -521,7 +510,6 @@
     });
   }
 
-  // --- Add wardrobe item (upload) ---
   document.getElementById("btnAddItem").addEventListener("click", () => {
     const fileInput = document.getElementById("uploadImage");
     const category = document.getElementById("uploadCategory").value;
@@ -546,86 +534,74 @@
     status.textContent = "Added to wardrobe.";
     status.classList.add("ok");
 
-    // clear form
     fileInput.value = "";
-    // keep other fields to upload similar quickly if they want
   });
 
-  // --- Chatbot logic (pure front-end) ---
   const chatContainer = document.getElementById("chatContainer");
   const chatInput = document.getElementById("chatInput");
   const btnSend = document.getElementById("btnSend");
 
+  // NEW: supports text-only (user / simple bot) and text+images (outfit suggestions)
   function appendMessage(role, content) {
-  const row = document.createElement("div");
-  row.className = "msg " + role;
+    const row = document.createElement("div");
+    row.className = "msg " + role;
 
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
 
-  if (typeof content === "object" && content !== null) {
-    // TEXT
-    const textEl = document.createElement("div");
-    textEl.textContent = content.text;
-    bubble.appendChild(textEl);
+    if (typeof content === "object" && content !== null) {
+      const textEl = document.createElement("div");
+      textEl.textContent = content.text;
+      bubble.appendChild(textEl);
 
-    // IMAGES
-    if (content.images && content.images.length > 0) {
-      const imgRow = document.createElement("div");
-      imgRow.style.display = "flex";
-      imgRow.style.gap = "8px";
-      imgRow.style.marginTop = "8px";
+      if (content.images && content.images.length > 0) {
+        const imgRow = document.createElement("div");
+        imgRow.style.display = "flex";
+        imgRow.style.gap = "8px";
+        imgRow.style.marginTop = "8px";
 
-      content.images.forEach(url => {
-        const img = document.createElement("img");
-        img.src = url;
-        img.style.width = "80px";
-        img.style.height = "80px";
-        img.style.objectFit = "cover";
-        img.style.borderRadius = "10px";
-        img.style.border = "1px solid #333";
-        imgRow.appendChild(img);
-      });
+        content.images.forEach(url => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.style.width = "80px";
+          img.style.height = "80px";
+          img.style.objectFit = "cover";
+          img.style.borderRadius = "10px";
+          img.style.border = "1px solid #333";
+          imgRow.appendChild(img);
+        });
 
-      bubble.appendChild(imgRow);
+        bubble.appendChild(imgRow);
+      }
+    } else {
+      bubble.textContent = content;
     }
 
-  } else {
-    // USER TEXT
-    bubble.textContent = content;
+    row.appendChild(bubble);
+    chatContainer.appendChild(row);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
-
-  row.appendChild(bubble);
-  chatContainer.appendChild(row);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
 
   function buildOutfitReply(userText) {
     const text = userText.toLowerCase();
 
     if (wardrobe.length === 0) {
-      return (
-        "I don’t see any items in your wardrobe yet.\n" +
+      return "I don’t see any items in your wardrobe yet.\n" +
         "Upload a few outfits, then ask me things like:\n" +
-        "- casual outfit\n- formal look\n- winter outfit\n- outfit with red colour"
-      );
+        "- casual outfit\n- formal look\n- winter outfit\n- outfit with red colour";
     }
 
-    // Decide filters based on keywords
     let desiredCategory = null;
     let desiredSeason = null;
     let desiredColor = null;
 
     if (text.includes("casual")) desiredCategory = "casual";
     if (text.includes("formal") || text.includes("formals")) desiredCategory = "formal";
-
     if (text.includes("seasonal")) desiredCategory = "seasonal";
     if (text.includes("winter")) desiredSeason = "winter";
     if (text.includes("summer")) desiredSeason = "summer";
     if (text.includes("rain") || text.includes("monsoon")) desiredSeason = "monsoon";
 
-    // crude colour detection
     const colours = ["red","blue","black","white","green","yellow","pink","brown","grey","orange","purple"];
     for (const c of colours) {
       if (text.includes(c)) {
@@ -651,7 +627,6 @@
              "Try uploading an item with matching category/colour/season, then ask again.";
     }
 
-    // pick up to 3 items
     const picks = filtered.slice(0, 3);
     let lines = ["Here’s an outfit suggestion from your wardrobe:"];
 
@@ -677,7 +652,6 @@
       text: lines.join("\n"),
       images: picks.map(item => item.url)
     };
-
   }
 
   function handleSend() {
@@ -686,7 +660,6 @@
     appendMessage("user", text);
     chatInput.value = "";
 
-    // small delay to make it feel like thinking
     setTimeout(() => {
       const reply = buildOutfitReply(text);
       appendMessage("bot", reply);
@@ -701,7 +674,6 @@
     }
   });
 
-  // Initial bot greeting
   appendMessage(
     "bot",
     "Hi! I’m your Drip Advisor stylist.\n" +
