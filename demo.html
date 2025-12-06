@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Drip Advisor – Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b0b10;
+      color: #f5f5f5;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1100px;
+      width: 100%;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 8px;
+    }
+
+    .card {
+      background: #151521;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #d1d5db;
+    }
+
+    input, select, button, textarea {
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #374151;
+      background: #0f172a;
+      color: #f9fafb;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+      outline: none;
+    }
+
+    input[type="file"] {
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      color: white;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+      opacity: 0.95;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #111827;
+      border: 1px solid #374151;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .col-half {
+      flex: 1 1 260px;
+    }
+
+    .status {
+      font-size: 12px;
+      margin-top: 4px;
+      min-height: 16px;
+    }
+
+    .status.ok {
+      color: #22c55e;
+    }
+
+    .status.err {
+      color: #f97316;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* wardrobe */
+    .wardrobe-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .wardrobe-item {
+      width: 120px;
+      background: #0b1120;
+      border-radius: 12px;
+      padding: 6px;
+      box-sizing: border-box;
+      font-size: 11px;
+      border: 1px solid #1f2937;
+    }
+
+    .wardrobe-item img {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 4px;
+    }
+
+    .wardrobe-tags {
+      color: #9ca3af;
+      font-size: 10px;
+    }
+
+    /* chat */
+    .chat-container {
+      max-height: 330px;
+      overflow-y: auto;
+      border-radius: 12px;
+      border: 1px solid #111827;
+      padding: 8px;
+      background: #020617;
+      box-sizing: border-box;
+    }
+
+    .msg {
+      margin: 6px 0;
+      display: flex;
+    }
+
+    .msg.user {
+      justify-content: flex-end;
+    }
+
+    .msg.bot {
+      justify-content: flex-start;
+    }
+
+    .bubble {
+      max-width: 78%;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.3;
+      white-space: pre-wrap;
+    }
+
+    .user .bubble {
+      background: #4f46e5;
+      color: #f9fafb;
+      border-bottom-right-radius: 2px;
+    }
+
+    .bot .bubble {
+      background: #111827;
+      color: #e5e7eb;
+      border-bottom-left-radius: 2px;
+    }
+
+    .msg-meta {
+      font-size: 10px;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chat-input-row textarea {
+      flex: 1 1 auto;
+      margin-bottom: 0;
+    }
+
+    /* top bar */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .topbar-title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+    }
+
+    @media (max-width: 720px) {
+      .card {
+        border-radius: 12px;
+      }
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Drip Advisor – Working Demo</div>
+      <div style="font-size: 13px; color:#9ca3af;">
+        Login → Upload Wardrobe → Chatbot suggests outfits (casual / formal / seasonal / colour-specific)
+      </div>
+    </div>
+    <div>
+      <span class="chip" id="userChip">Not logged in</span>
+    </div>
+  </div>
+
+  <!-- AUTH CARD -->
+  <div class="card" id="authCard">
+    <div class="card-header">
+      <h2>1. Login / Registration</h2>
+      <span class="badge">Local demo – stored in this browser</span>
+    </div>
+
+    <div class="row">
+      <div class="col-half">
+        <h3 style="font-size: 15px;">New here? Register</h3>
+        <label for="regName">Name</label>
+        <input id="regName" type="text" placeholder="Aanya" />
+        <label for="regEmail">Email</label>
+        <input id="regEmail" type="email" placeholder="you@example.com" />
+        <label for="regPassword">Password</label>
+        <input id="regPassword" type="password" placeholder="●●●●●●●" />
+        <button id="btnRegister">Register</button>
+        <div class="status" id="regStatus"></div>
+      </div>
+
+      <div class="col-half">
+        <h3 style="font-size: 15px;">Already registered? Login</h3>
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" placeholder="you@example.com" />
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" placeholder="●●●●●●●" />
+        <button id="btnLogin">Login</button>
+        <div class="status" id="loginStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP (hidden until login) -->
+  <div id="mainApp" class="hidden">
+    <!-- UPLOAD + WARDROBE -->
+    <div class="card">
+      <div class="card-header">
+        <h2>2. Upload outfits to your wardrobe</h2>
+        <span class="badge">Stored only for this session (demo)</span>
+      </div>
+
+      <div class="row">
+        <div class="col-half">
+          <label for="uploadImage">Choose outfit image</label>
+          <input id="uploadImage" type="file" accept="image/*" />
+
+          <label for="uploadCategory">Category</label>
+          <select id="uploadCategory">
+            <option value="casual">Casual</option>
+            <option value="formal">Formal</option>
+            <option value="seasonal">Seasonal</option>
+          </select>
+
+          <label for="uploadColor">Colour (optional, e.g. red / blue)</label>
+          <input id="uploadColor" type="text" placeholder="red, black, blue..." />
+
+          <label for="uploadSeason">Season (optional, e.g. winter / summer)</label>
+          <input id="uploadSeason" type="text" placeholder="winter, monsoon, summer..." />
+
+          <button id="btnAddItem">Add to Wardrobe</button>
+          <div class="status" id="uploadStatus"></div>
+        </div>
+
+        <div class="col-half">
+          <h3 style="font-size: 15px;">Your Wardrobe (for this demo)</h3>
+          <div id="wardrobeEmpty" style="font-size: 13px; color:#9ca3af;">
+            No items yet. Upload a few outfits to see them here.
+          </div>
+          <div class="wardrobe-grid" id="wardrobeGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHATBOT -->
+    <div class="card">
+      <div class="card-header">
+        <h2>3. Chatbot – outfit suggestions</h2>
+        <span class="badge">Understands: casual, formal, seasonal, colour names</span>
+      </div>
+
+      <div class="chat-container" id="chatContainer">
+        <!-- messages will be appended here -->
+      </div>
+
+      <div class="chat-input-row">
+        <textarea id="chatInput" placeholder="Try: ‘Suggest a casual outfit’ or ‘Outfit with red colour’"></textarea>
+        <button id="btnSend">Send</button>
+      </div>
+      <div style="font-size:11px; color:#9ca3af; margin-top:4px;">
+        Demo logic runs fully in the browser. In the actual system, this would call the Flask + Gemini backend.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- Simple demo "database" using localStorage + in-memory arrays ---
+
+  const LS_USER_KEY = "dripDemoUser";
+
+  /** @type {{name:string,email:string,password:string}|null} */
+  let currentUser = null;
+
+  /** @type {Array<{id:number, url:string, category:string, color:string, season:string}>} */
+  let wardrobe = [];
+
+  const userChip = document.getElementById("userChip");
+  const authCard = document.getElementById("authCard");
+  const mainApp = document.getElementById("mainApp");
+
+  // --- Helper: update UI based on login state ---
+  function refreshAuthUI() {
+    if (currentUser) {
+      userChip.textContent = "Logged in as " + currentUser.name;
+      authCard.classList.add("hidden");
+      mainApp.classList.remove("hidden");
+    } else {
+      userChip.textContent = "Not logged in";
+      authCard.classList.remove("hidden");
+      mainApp.classList.add("hidden");
+    }
+  }
+
+  // --- Load existing user if any (for demo) ---
+  (function initAuth() {
+    try {
+      const raw = localStorage.getItem(LS_USER_KEY);
+      if (raw) {
+        currentUser = JSON.parse(raw);
+      }
+    } catch (e) {
+      console.warn("Failed to parse user", e);
+    }
+    refreshAuthUI();
+  })();
+
+  // --- Registration logic ---
+  document.getElementById("btnRegister").addEventListener("click", () => {
+    const name = document.getElementById("regName").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const password = document.getElementById("regPassword").value;
+
+    const status = document.getElementById("regStatus");
+    status.textContent = "";
+    status.className = "status";
+
+    if (!name || !email || !password) {
+      status.textContent = "Please fill all fields.";
+      status.classList.add("err");
+      return;
+    }
+
+    const user = { name, email, password };
+    localStorage.setItem(LS_USER_KEY, JSON.stringify(user));
+    currentUser = user;
+    refreshAuthUI();
+
+    status.textContent = "Registered and logged in successfully.";
+    status.classList.add("ok");
+
+    // Optionally clear inputs
+    document.getElementById("regPassword").value = "";
+  });
+
+  // --- Login logic ---
+  document.getElementById("btnLogin").addEventListener("click", () => {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const status = document.getElementById("loginStatus");
+    status.textContent = "";
+    status.className = "status";
+
+    const raw = localStorage.getItem(LS_USER_KEY);
+    if (!raw) {
+      status.textContent = "No user registered yet. Please register first.";
+      status.classList.add("err");
+      return;
+    }
+    let saved;
+    try {
+      saved = JSON.parse(raw);
+    } catch {
+      status.textContent = "Corrupted user data. Try registering again.";
+      status.classList.add("err");
+      return;
+    }
+    if (saved.email === email && saved.password === password) {
+      currentUser = saved;
+      refreshAuthUI();
+      status.textContent = "Login successful.";
+      status.classList.add("ok");
+      document.getElementById("loginPassword").value = "";
+    } else {
+      status.textContent = "Invalid email / password.";
+      status.classList.add("err");
+    }
+  });
+
+  // --- Wardrobe UI update ---
+  const wardrobeGrid = document.getElementById("wardrobeGrid");
+  const wardrobeEmpty = document.getElementById("wardrobeEmpty");
+
+  function renderWardrobe() {
+    wardrobeGrid.innerHTML = "";
+    if (wardrobe.length === 0) {
+      wardrobeEmpty.style.display = "block";
+      return;
+    }
+    wardrobeEmpty.style.display = "none";
+
+    wardrobe.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "wardrobe-item";
+      const img = document.createElement("img");
+      img.src = item.url;
+      img.alt = item.category + " item";
+
+      const title = document.createElement("div");
+      title.textContent = item.category.toUpperCase();
+      const tags = document.createElement("div");
+      tags.className = "wardrobe-tags";
+      tags.textContent = [
+        item.color ? ("Colour: " + item.color) : "",
+        item.season ? ("Season: " + item.season) : ""
+      ].filter(Boolean).join(" • ");
+
+      div.appendChild(img);
+      div.appendChild(title);
+      div.appendChild(tags);
+      wardrobeGrid.appendChild(div);
+    });
+  }
+
+  // --- Add wardrobe item (upload) ---
+  document.getElementById("btnAddItem").addEventListener("click", () => {
+    const fileInput = document.getElementById("uploadImage");
+    const category = document.getElementById("uploadCategory").value;
+    const color = document.getElementById("uploadColor").value.trim().toLowerCase();
+    const season = document.getElementById("uploadSeason").value.trim().toLowerCase();
+    const status = document.getElementById("uploadStatus");
+    status.textContent = "";
+    status.className = "status";
+
+    if (!fileInput.files || fileInput.files.length === 0) {
+      status.textContent = "Please choose an image.";
+      status.classList.add("err");
+      return;
+    }
+
+    const file = fileInput.files[0];
+    const url = URL.createObjectURL(file);
+    const id = Date.now();
+
+    wardrobe.push({ id, url, category, color, season });
+    renderWardrobe();
+    status.textContent = "Added to wardrobe.";
+    status.classList.add("ok");
+
+    // clear form
+    fileInput.value = "";
+    // keep other fields to upload similar quickly if they want
+  });
+
+  // --- Chatbot logic (pure front-end) ---
+  const chatContainer = document.getElementById("chatContainer");
+  const chatInput = document.getElementById("chatInput");
+  const btnSend = document.getElementById("btnSend");
+
+  function appendMessage(role, text) {
+    const row = document.createElement("div");
+    row.className = "msg " + role;
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = text;
+
+    row.appendChild(bubble);
+    chatContainer.appendChild(row);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function buildOutfitReply(userText) {
+    const text = userText.toLowerCase();
+
+    if (wardrobe.length === 0) {
+      return (
+        "I don’t see any items in your wardrobe yet.\n" +
+        "Upload a few outfits, then ask me things like:\n" +
+        "- casual outfit\n- formal look\n- winter outfit\n- outfit with red colour"
+      );
+    }
+
+    // Decide filters based on keywords
+    let desiredCategory = null;
+    let desiredSeason = null;
+    let desiredColor = null;
+
+    if (text.includes("casual")) desiredCategory = "casual";
+    if (text.includes("formal") || text.includes("formals")) desiredCategory = "formal";
+
+    if (text.includes("seasonal")) desiredCategory = "seasonal";
+    if (text.includes("winter")) desiredSeason = "winter";
+    if (text.includes("summer")) desiredSeason = "summer";
+    if (text.includes("rain") || text.includes("monsoon")) desiredSeason = "monsoon";
+
+    // crude colour detection
+    const colours = ["red","blue","black","white","green","yellow","pink","brown","grey","orange","purple"];
+    for (const c of colours) {
+      if (text.includes(c)) {
+        desiredColor = c;
+        break;
+      }
+    }
+
+    let filtered = [...wardrobe];
+
+    if (desiredCategory) {
+      filtered = filtered.filter(i => i.category === desiredCategory);
+    }
+    if (desiredSeason) {
+      filtered = filtered.filter(i => i.season && i.season.includes(desiredSeason));
+    }
+    if (desiredColor) {
+      filtered = filtered.filter(i => i.color && i.color.includes(desiredColor));
+    }
+
+    if (filtered.length === 0) {
+      return "I couldn’t find an exact match in your wardrobe for that request.\n" +
+             "Try uploading an item with matching category/colour/season, then ask again.";
+    }
+
+    // pick up to 3 items
+    const picks = filtered.slice(0, 3);
+    let lines = ["Here’s an outfit suggestion from your wardrobe:"];
+
+    picks.forEach((item, idx) => {
+      lines.push(
+        `${idx + 1}. ${item.category.toUpperCase()} piece` +
+        (item.color ? ` in ${item.color}` : "") +
+        (item.season ? ` • suited for ${item.season}` : "")
+      );
+    });
+
+    if (desiredCategory === "casual") {
+      lines.push("\nStyle tip: keep it relaxed with comfy footwear and minimal accessories.");
+    } else if (desiredCategory === "formal") {
+      lines.push("\nStyle tip: add a watch or structured bag to keep it sharp and professional.");
+    } else if (desiredSeason === "winter") {
+      lines.push("\nStyle tip: layer with knits or a jacket and keep warm accessories handy.");
+    } else if (desiredColor) {
+      lines.push(`\nStyle tip: let the ${desiredColor} piece be the hero and keep other colours neutral.`);
+    }
+
+    return lines.join("\n");
+  }
+
+  function handleSend() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    appendMessage("user", text);
+    chatInput.value = "";
+
+    // small delay to make it feel like thinking
+    setTimeout(() => {
+      const reply = buildOutfitReply(text);
+      appendMessage("bot", reply);
+    }, 300);
+  }
+
+  btnSend.addEventListener("click", handleSend);
+  chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+
+  // Initial bot greeting
+  appendMessage(
+    "bot",
+    "Hi! I’m your Drip Advisor stylist.\n" +
+    "1️⃣ Register / login above.\n" +
+    "2️⃣ Upload a few outfits into your wardrobe.\n" +
+    "3️⃣ Then ask me things like:\n" +
+    "   • Suggest a casual outfit\n" +
+    "   • Formal outfit for presentation\n" +
+    "   • Winter outfit\n" +
+    "   • Outfit with red colour"
+  );
+</script>
+</body>
+</html>
