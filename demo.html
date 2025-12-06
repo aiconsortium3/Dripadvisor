@@ -556,18 +556,50 @@
   const chatInput = document.getElementById("chatInput");
   const btnSend = document.getElementById("btnSend");
 
-  function appendMessage(role, text) {
-    const row = document.createElement("div");
-    row.className = "msg " + role;
+  function appendMessage(role, content) {
+  const row = document.createElement("div");
+  row.className = "msg " + role;
 
-    const bubble = document.createElement("div");
-    bubble.className = "bubble";
-    bubble.textContent = text;
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
 
-    row.appendChild(bubble);
-    chatContainer.appendChild(row);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+  if (typeof content === "object" && content !== null) {
+    // TEXT
+    const textEl = document.createElement("div");
+    textEl.textContent = content.text;
+    bubble.appendChild(textEl);
+
+    // IMAGES
+    if (content.images && content.images.length > 0) {
+      const imgRow = document.createElement("div");
+      imgRow.style.display = "flex";
+      imgRow.style.gap = "8px";
+      imgRow.style.marginTop = "8px";
+
+      content.images.forEach(url => {
+        const img = document.createElement("img");
+        img.src = url;
+        img.style.width = "80px";
+        img.style.height = "80px";
+        img.style.objectFit = "cover";
+        img.style.borderRadius = "10px";
+        img.style.border = "1px solid #333";
+        imgRow.appendChild(img);
+      });
+
+      bubble.appendChild(imgRow);
+    }
+
+  } else {
+    // USER TEXT
+    bubble.textContent = content;
   }
+
+  row.appendChild(bubble);
+  chatContainer.appendChild(row);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
 
   function buildOutfitReply(userText) {
     const text = userText.toLowerCase();
@@ -641,7 +673,11 @@
       lines.push(`\nStyle tip: let the ${desiredColor} piece be the hero and keep other colours neutral.`);
     }
 
-    return lines.join("\n");
+    return {
+      text: lines.join("\n"),
+      images: picks.map(item => item.url)
+    };
+
   }
 
   function handleSend() {
