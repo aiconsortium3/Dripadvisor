@@ -279,6 +279,12 @@
   <div class="topbar">
     <div>
       <div class="topbar-title">Drip Advisor – Working Demo</div>
+      <div>
+  <span class="chip" id="userChip">Not logged in</span>
+  <button id="btnLogout" class="btn-secondary" style="margin-left:10px;padding:4px 12px;font-size:12px;">
+    Logout
+  </button>
+</div>
       <div style="font-size: 13px; color:#9ca3af;">
         Login → Upload Wardrobe → Chatbot suggests outfits (casual / formal / seasonal / colour-specific)
       </div>
@@ -405,6 +411,34 @@
       mainApp.classList.add("hidden");
     }
   }
+  document.getElementById("btnLogout").addEventListener("click", () => {
+  // remove stored user
+  localStorage.removeItem(LS_USER_KEY);
+  currentUser = null;
+
+  // clear wardrobe
+  wardrobe = [];
+  renderWardrobe();
+
+  // clear chat messages
+  chatContainer.innerHTML = "";
+
+  // show initial greeting message again
+  appendMessage(
+    "bot",
+    "Hi! I’m your Drip Advisor stylist.\n" +
+    "1️⃣ Register / login above.\n" +
+    "2️⃣ Upload a few outfits into your wardrobe.\n" +
+    "3️⃣ Then ask me things like:\n" +
+    "   • Suggest a casual outfit\n" +
+    "   • Formal outfit for presentation\n" +
+    "   • Winter outfit\n" +
+    "   • Outfit with red colour"
+  );
+
+  // update UI
+  refreshAuthUI();
+});
 
   (function initAuth() {
     try {
