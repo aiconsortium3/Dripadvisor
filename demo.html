@@ -492,6 +492,13 @@
 
   let currentUser = null;
   let wardrobe = [];
+  let outfitHistory = [];
+  
+  const savedHistory = localStorage.getItem("outfitHistory");
+  if (savedHistory) {
+    outfitHistory = JSON.parse(savedHistory);
+  }
+  
 
   const userChip = document.getElementById("userChip");
   const authCard = document.getElementById("authCard");
@@ -763,6 +770,19 @@
     if (desiredColor) {
       filtered = filtered.filter(i => i.color && i.color.includes(desiredColor));
     }
+        // --------------------------------------
+    // NEW: Prevent outfits repeated in 14 days
+    // --------------------------------------
+    const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    
+    filtered = filtered.filter(item => {
+      const record = outfitHistory.find(h => h.id === item.id);
+      if (!record) return true; // never used → allow
+    
+      return now - record.date > TWO_WEEKS; // used long ago → allow
+    });
+
 
     if (filtered.length === 0) {
       return "I couldn’t find an exact match in your wardrobe for that request.\n" +
@@ -770,7 +790,20 @@
     }
 
     const picks = filtered.slice(0, 3);
+    
     let lines = ["Here’s an outfit suggestion from your wardrobe:"];
+    // --------------------------------------
+    // NEW: Mark these outfits as used today
+    // --------------------------------------
+    picks.forEach(item => {
+      outfitHistory.push({
+        id: item.id,
+        date: Date.now()
+      });
+    });
+    
+    // Save updated history permanently
+    localStorage.setItem("outfitHistory", JSON.stringify(outfitHistory));
 
     picks.forEach((item, idx) => {
       lines.push(
