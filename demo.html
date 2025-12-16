@@ -488,378 +488,376 @@
 </div> <!-- end app -->
 
 <script>
-  const LS_USER_KEY = "dripDemoUser";
+/* ---------------------------------------------------------
+   USER + DATA STORAGE
+--------------------------------------------------------- */
+const LS_USER_DB   = "dripUsersDB";         // stores all users
+const LS_ACTIVE    = "dripActiveUser";      // stores current logged-in user email
+const LS_WARDROBE  = "wardrobe_";           // wardrobe per user
+const LS_HISTORY   = "history_";            // outfit history per user
 
-  let currentUser = null;
-  let wardrobe = [];
-  let outfitHistory = [];
-  
-  const savedHistory = localStorage.getItem("outfitHistory");
-  if (savedHistory) {
-    outfitHistory = JSON.parse(savedHistory);
+let currentUser = null;
+let wardrobe = [];
+let outfitHistory = [];
+
+/* ---------------------------------------------------------
+   LOAD ACTIVE USER + THEIR DATA
+--------------------------------------------------------- */
+function loadActiveUser() {
+  const email = localStorage.getItem(LS_ACTIVE);
+  if (!email) return;
+
+  const allUsers = JSON.parse(localStorage.getItem(LS_USER_DB) || "[]");
+  currentUser = allUsers.find(u => u.email === email);
+
+  if (currentUser) {
+    wardrobe = JSON.parse(localStorage.getItem(LS_WARDROBE + email) || "[]");
+    outfitHistory = JSON.parse(localStorage.getItem(LS_HISTORY + email) || "[]");
   }
-  
+}
 
-  const userChip = document.getElementById("userChip");
-  const authCard = document.getElementById("authCard");
-  const authLayout = document.getElementById("authLayout");
-  const mainApp = document.getElementById("mainApp");
+/* ---------------------------------------------------------
+   SAVE DATA FOR CURRENT USER
+--------------------------------------------------------- */
+function saveUserData() {
+  if (!currentUser) return;
+  const email = currentUser.email;
 
-  function refreshAuthUI() {
-    if (currentUser) {
-      userChip.textContent = "Logged in as " + currentUser.name;
+  localStorage.setItem(LS_WARDROBE + email, JSON.stringify(wardrobe));
+  localStorage.setItem(LS_HISTORY + email, JSON.stringify(outfitHistory));
+}
 
-      // hide login layout + show main app
-      authLayout.classList.add("hidden");
-      mainApp.classList.remove("hidden");
-
-      // show logout button
-      document.getElementById("btnLogout").style.display = "inline-block";
-    } else {
-      userChip.textContent = "Not logged in";
-
-      // show login layout + hide main app
-      authLayout.classList.remove("hidden");
-      mainApp.classList.add("hidden");
-
-      // hide logout button
-      document.getElementById("btnLogout").style.display = "none";
-    }
+/* ---------------------------------------------------------
+   UPDATE UI BASED ON LOGIN STATE
+--------------------------------------------------------- */
+function refreshAuthUI() {
+  if (currentUser) {
+    userChip.textContent = "Logged in as " + currentUser.name;
+    authLayout.classList.add("hidden");
+    mainApp.classList.remove("hidden");
+    btnLogout.style.display = "inline-block";
+  } else {
+    userChip.textContent = "Not logged in";
+    authLayout.classList.remove("hidden");
+    mainApp.classList.add("hidden");
+    btnLogout.style.display = "none";
   }
+}
 
-  document.getElementById("btnLogout").addEventListener("click", () => {
-    // remove stored user
-    localStorage.removeItem(LS_USER_KEY);
-    currentUser = null;
+loadActiveUser();
+refreshAuthUI();
 
-    // clear wardrobe
-    wardrobe = [];
-    renderWardrobe();
+/* ---------------------------------------------------------
+   REGISTER USER
+--------------------------------------------------------- */
+btnRegister.addEventListener("click", () => {
+  const name = regName.value.trim();
+  const email = regEmail.value.trim();
+  const password = regPassword.value.trim();
 
-    // clear chat messages
-    chatContainer.innerHTML = "";
+  regStatus.textContent = "";
+  regStatus.className = "status";
 
-    // show initial greeting message again
-    appendMessage(
-      "bot",
-      "Hi! I’m your Drip Advisor stylist.\n" +
-      "1️⃣ Register / login above.\n" +
-      "2️⃣ Upload a few outfits into your wardrobe.\n" +
-      "3️⃣ Then ask me things like:\n" +
-      "   • Suggest a casual outfit\n" +
-      "   • Formal outfit for presentation\n" +
-      "   • Winter outfit\n" +
-      "   • Outfit with red colour"
-    );
-
-    // update UI
-    refreshAuthUI();
-  });
-
-  (function initAuth() {
-    try {
-      const raw = localStorage.getItem(LS_USER_KEY);
-      if (raw) {
-        currentUser = JSON.parse(raw);
-      }
-    } catch (e) {
-      console.warn("Failed to parse user", e);
-    }
-    refreshAuthUI();
-  })();
-
-  document.getElementById("btnRegister").addEventListener("click", () => {
-    const name = document.getElementById("regName").value.trim();
-    const email = document.getElementById("regEmail").value.trim();
-    const password = document.getElementById("regPassword").value;
-
-    const status = document.getElementById("regStatus");
-    status.textContent = "";
-    status.className = "status";
-
-    if (!name || !email || !password) {
-      status.textContent = "Please fill all fields.";
-      status.classList.add("err");
-      return;
-    }
-
-    const user = { name, email, password };
-    localStorage.setItem(LS_USER_KEY, JSON.stringify(user));
-    currentUser = user;
-    refreshAuthUI();
-
-    status.textContent = "Registered and logged in successfully.";
-    status.classList.add("ok");
-    document.getElementById("regPassword").value = "";
-  });
-
-  document.getElementById("btnLogin").addEventListener("click", () => {
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value;
-    const status = document.getElementById("loginStatus");
-    status.textContent = "";
-    status.className = "status";
-
-    const raw = localStorage.getItem(LS_USER_KEY);
-    if (!raw) {
-      status.textContent = "No user registered yet. Please register first.";
-      status.classList.add("err");
-      return;
-    }
-    let saved;
-    try {
-      saved = JSON.parse(raw);
-    } catch {
-      status.textContent = "Corrupted user data. Try registering again.";
-      status.classList.add("err");
-      return;
-    }
-    if (saved.email === email && saved.password === password) {
-      currentUser = saved;
-      refreshAuthUI();
-      status.textContent = "Login successful.";
-      status.classList.add("ok");
-      document.getElementById("loginPassword").value = "";
-    } else {
-      status.textContent = "Invalid email / password.";
-      status.classList.add("err");
-    }
-  });
-
-  const wardrobeGrid = document.getElementById("wardrobeGrid");
-  const wardrobeEmpty = document.getElementById("wardrobeEmpty");
-
-  function renderWardrobe() {
-    wardrobeGrid.innerHTML = "";
-    if (wardrobe.length === 0) {
-      wardrobeEmpty.style.display = "block";
-      return;
-    }
-    wardrobeEmpty.style.display = "none";
-
-    wardrobe.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "wardrobe-item";
-      const img = document.createElement("img");
-      img.src = item.url;
-      img.alt = item.category + " item";
-
-      const title = document.createElement("div");
-      title.textContent = item.category.toUpperCase();
-      const tags = document.createElement("div");
-      tags.className = "wardrobe-tags";
-      tags.textContent = [
-        item.color ? ("Colour: " + item.color) : "",
-        item.season ? ("Season: " + item.season) : ""
-      ].filter(Boolean).join(" • ");
-
-      div.appendChild(img);
-      div.appendChild(title);
-      div.appendChild(tags);
-      wardrobeGrid.appendChild(div);
-    });
+  if (!name || !email || !password) {
+    regStatus.textContent = "Please fill all fields.";
+    regStatus.classList.add("err");
+    return;
   }
 
-  document.getElementById("btnAddItem").addEventListener("click", () => {
-    const fileInput = document.getElementById("uploadImage");
-    const category = document.getElementById("uploadCategory").value;
-    const color = document.getElementById("uploadColor").value.trim().toLowerCase();
-    const season = document.getElementById("uploadSeason").value.trim().toLowerCase();
-    const status = document.getElementById("uploadStatus");
-    status.textContent = "";
-    status.className = "status";
+  let users = JSON.parse(localStorage.getItem(LS_USER_DB) || "[]");
 
-    if (!fileInput.files || fileInput.files.length === 0) {
-      status.textContent = "Please choose an image.";
-      status.classList.add("err");
-      return;
-    }
-
-    const file = fileInput.files[0];
-    const url = URL.createObjectURL(file);
-    const id = Date.now();
-
-    wardrobe.push({ id, url, category, color, season });
-    renderWardrobe();
-    status.textContent = "Added to wardrobe.";
-    status.classList.add("ok");
-
-    fileInput.value = "";
-  });
-
-  const chatContainer = document.getElementById("chatContainer");
-  const chatInput = document.getElementById("chatInput");
-  const btnSend = document.getElementById("btnSend");
-
-  function appendMessage(role, content) {
-    const row = document.createElement("div");
-    row.className = "msg " + role;
-
-    const bubble = document.createElement("div");
-    bubble.className = "bubble";
-
-    if (typeof content === "object" && content !== null) {
-      const textEl = document.createElement("div");
-      textEl.textContent = content.text;
-      bubble.appendChild(textEl);
-
-      if (content.images && content.images.length > 0) {
-        const imgRow = document.createElement("div");
-        imgRow.style.display = "flex";
-        imgRow.style.gap = "8px";
-        imgRow.style.marginTop = "8px";
-
-        content.images.forEach(url => {
-          const img = document.createElement("img");
-          img.src = url;
-          img.style.width = "80px";
-          img.style.height = "80px";
-          img.style.objectFit = "cover";
-          img.style.borderRadius = "10px";
-          img.style.border = "1px solid #333";
-          imgRow.appendChild(img);
-        });
-
-        bubble.appendChild(imgRow);
-      }
-    } else {
-      bubble.textContent = content;
-    }
-
-    row.appendChild(bubble);
-    chatContainer.appendChild(row);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+  if (users.some(u => u.email === email)) {
+    regStatus.textContent = "User already exists.";
+    regStatus.classList.add("err");
+    return;
   }
 
-  function buildOutfitReply(userText) {
-    const text = userText.toLowerCase();
+  users.push({ name, email, password });
+  localStorage.setItem(LS_USER_DB, JSON.stringify(users));
+  localStorage.setItem(LS_ACTIVE, email);
 
-    if (wardrobe.length === 0) {
-      return "I don’t see any items in your wardrobe yet.\n" +
-        "Upload a few outfits, then ask me things like:\n" +
-        "- casual outfit\n- formal look\n- winter outfit\n- outfit with red colour";
-    }
+  currentUser = { name, email, password };
+  wardrobe = [];
+  outfitHistory = [];
 
-    let desiredCategory = null;
-    let desiredSeason = null;
-    let desiredColor = null;
+  saveUserData();
+  refreshAuthUI();
 
-    if (text.includes("casual")) desiredCategory = "casual";
-    if (text.includes("formal") || text.includes("formals")) desiredCategory = "formal";
-    if (text.includes("seasonal")) desiredCategory = "seasonal";
-    if (text.includes("winter")) desiredSeason = "winter";
-    if (text.includes("summer")) desiredSeason = "summer";
-    if (text.includes("rain") || text.includes("monsoon")) desiredSeason = "monsoon";
+  regStatus.textContent = "Registered and logged in!";
+  regStatus.classList.add("ok");
+});
 
-    const colours = ["red","blue","black","white","green","yellow","pink","brown","grey","orange","purple"];
-    for (const c of colours) {
-      if (text.includes(c)) {
-        desiredColor = c;
-        break;
-      }
-    }
+/* ---------------------------------------------------------
+   LOGIN USER
+--------------------------------------------------------- */
+btnLogin.addEventListener("click", () => {
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value.trim();
 
-    let filtered = [...wardrobe];
+  loginStatus.textContent = "";
+  loginStatus.className = "status";
 
-    if (desiredCategory) {
-      filtered = filtered.filter(i => i.category === desiredCategory);
-    }
-    if (desiredSeason) {
-      filtered = filtered.filter(i => i.season && i.season.includes(desiredSeason));
-    }
-    if (desiredColor) {
-      filtered = filtered.filter(i => i.color && i.color.includes(desiredColor));
-    }
-        // --------------------------------------
-    // NEW: Prevent outfits repeated in 14 days
-    // --------------------------------------
-    const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
-    const now = Date.now();
-    
-    filtered = filtered.filter(item => {
-      const record = outfitHistory.find(h => h.id === item.id);
-      if (!record) return true; // never used → allow
-    
-      return now - record.date > TWO_WEEKS; // used long ago → allow
-    });
+  let users = JSON.parse(localStorage.getItem(LS_USER_DB) || "[]");
+  const found = users.find(u => u.email === email && u.password === password);
 
+  if (!found) {
+    loginStatus.textContent = "Invalid email or password.";
+    loginStatus.classList.add("err");
+    return;
+  }
 
-    if (filtered.length === 0) {
-      return "I couldn’t find an exact match in your wardrobe for that request.\n" +
-             "Try uploading an item with matching category/colour/season, then ask again.";
-    }
+  currentUser = found;
+  localStorage.setItem(LS_ACTIVE, email);
 
-    const picks = filtered.slice(0, 3);
-    
-    let lines = ["Here’s an outfit suggestion from your wardrobe:"];
-    // --------------------------------------
-    // NEW: Mark these outfits as used today
-    // --------------------------------------
-    picks.forEach(item => {
-      outfitHistory.push({
-        id: item.id,
-        date: Date.now()
+  wardrobe = JSON.parse(localStorage.getItem(LS_WARDROBE + email) || "[]");
+  outfitHistory = JSON.parse(localStorage.getItem(LS_HISTORY + email) || "[]");
+
+  refreshAuthUI();
+  loginStatus.textContent = "Login successful.";
+  loginStatus.classList.add("ok");
+});
+
+/* ---------------------------------------------------------
+   LOGOUT USER
+--------------------------------------------------------- */
+btnLogout.addEventListener("click", () => {
+  localStorage.removeItem(LS_ACTIVE);
+  currentUser = null;
+  wardrobe = [];
+  outfitHistory = [];
+
+  refreshAuthUI();
+  chatContainer.innerHTML = "";
+  appendMessage("bot", greetingMessage());
+});
+
+/* ---------------------------------------------------------
+   WARDROBE DISPLAY
+--------------------------------------------------------- */
+function renderWardrobe() {
+  wardrobeGrid.innerHTML = "";
+  if (wardrobe.length === 0) {
+    wardrobeEmpty.style.display = "block";
+    return;
+  }
+
+  wardrobeEmpty.style.display = "none";
+
+  wardrobe.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "wardrobe-item";
+
+    div.innerHTML = `
+      <img src="${item.url}">
+      <div>${item.category.toUpperCase()}</div>
+      <div class="wardrobe-tags">
+        ${item.color ? "Colour: " + item.color : ""}
+        ${item.season ? " • Season: " + item.season : ""}
+      </div>
+    `;
+
+    wardrobeGrid.appendChild(div);
+  });
+}
+
+/* ---------------------------------------------------------
+   ADD ITEM TO WARDROBE
+--------------------------------------------------------- */
+btnAddItem.addEventListener("click", () => {
+  if (!uploadImage.files.length) {
+    uploadStatus.textContent = "Please choose an image.";
+    uploadStatus.classList.add("err");
+    return;
+  }
+
+  const file = uploadImage.files[0];
+  const url = URL.createObjectURL(file);
+
+  const item = {
+    id: Date.now(),
+    url,
+    category: uploadCategory.value,
+    color: uploadColor.value.trim().toLowerCase(),
+    season: uploadSeason.value.trim().toLowerCase()
+  };
+
+  wardrobe.push(item);
+  saveUserData();
+  renderWardrobe();
+
+  uploadStatus.textContent = "Added!";
+  uploadStatus.classList.add("ok");
+  uploadImage.value = "";
+});
+
+/* ---------------------------------------------------------
+   CHATBOT UI
+--------------------------------------------------------- */
+function appendMessage(role, content) {
+  const row = document.createElement("div");
+  row.className = "msg " + role;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  if (typeof content === "object") {
+    bubble.innerHTML = `<div>${content.text}</div>`;
+    if (content.images?.length) {
+      const imgRow = document.createElement("div");
+      imgRow.style.display = "flex";
+      imgRow.style.gap = "8px";
+      imgRow.style.marginTop = "8px";
+      content.images.forEach(u => {
+        const i = document.createElement("img");
+        i.src = u;
+        i.style.width = "80px";
+        i.style.height = "80px";
+        i.style.objectFit = "cover";
+        imgRow.appendChild(i);
       });
-    });
-    
-    // Save updated history permanently
-    localStorage.setItem("outfitHistory", JSON.stringify(outfitHistory));
-
-    picks.forEach((item, idx) => {
-      lines.push(
-        `${idx + 1}. ${item.category.toUpperCase()} piece` +
-        (item.color ? ` in ${item.color}` : "") +
-        (item.season ? ` • suited for ${item.season}` : "")
-      );
-    });
-
-    if (desiredCategory === "casual") {
-      lines.push("\nStyle tip: Keep it relaxed with comfy footwear and minimal accessories.");
-    } else if (desiredCategory === "formal") {
-      lines.push("\nStyle tip: Add a watch or structured bag to keep it sharp and professional.");
-    } else if (desiredSeason === "winter") {
-      lines.push("\nStyle tip: Layer with knits or a jacket and keep warm accessories handy.");
-    } else if (desiredColor) {
-      lines.push(`\nStyle tip: Let the ${desiredColor} piece be the hero and keep other colours neutral.`);
+      bubble.appendChild(imgRow);
     }
-
-    return {
-      text: lines.join("\n"),
-      images: picks.map(item => item.url)
-    };
+  } else {
+    bubble.textContent = content;
   }
 
-  function handleSend() {
-    const text = chatInput.value.trim();
-    if (!text) return;
-    appendMessage("user", text);
-    chatInput.value = "";
+  row.appendChild(bubble);
+  chatContainer.appendChild(row);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
 
-    setTimeout(() => {
-      const reply = buildOutfitReply(text);
-      appendMessage("bot", reply);
-    }, 300);
+/* ---------------------------------------------------------
+   GREETING MESSAGE
+--------------------------------------------------------- */
+function greetingMessage() {
+  return "Hi! I’m your Drip Advisor stylist 👗✨\n" +
+         "1️⃣ Register / login.\n" +
+         "2️⃣ Upload outfits.\n" +
+         "3️⃣ Ask for:\n" +
+         "   • casual outfit\n" +
+         "   • winter outfit\n" +
+         "   • outfit with blue\n";
+}
+
+/* ---------------------------------------------------------
+   OUTFIT SUGGESTION BUILDER
+--------------------------------------------------------- */
+let lastSuggestions = [];  // store suggestion set for selection
+
+function buildOutfitReply(userText) {
+  const t = userText.toLowerCase();
+
+  // If selecting: "I pick 1"
+  if (/pick|choose|select/.test(t)) {
+    const num = parseInt(t.replace(/\D/g, ""));
+    if (num && lastSuggestions[num - 1]) {
+      const chosen = lastSuggestions[num - 1];
+
+      outfitHistory.push({ id: chosen.id, date: Date.now() });
+      saveUserData();
+
+      return {
+        text: `✔️ Outfit ${num} selected!\nI’ll avoid suggesting it for the next 14 days.`,
+        images: [chosen.url]
+      };
+    }
   }
 
-  btnSend.addEventListener("click", handleSend);
-  chatInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+  if (wardrobe.length === 0) {
+    return "Your wardrobe is empty. Upload items first!";
+  }
+
+  // FILTERING
+  let desiredCategory = null;
+  let desiredColor = null;
+  let desiredSeason = null;
+
+  if (t.includes("casual")) desiredCategory = "casual";
+  if (t.includes("formal")) desiredCategory = "formal";
+  if (t.includes("seasonal")) desiredCategory = "seasonal";
+
+  if (t.includes("winter")) desiredSeason = "winter";
+  if (t.includes("summer")) desiredSeason = "summer";
+  if (t.includes("monsoon")) desiredSeason = "monsoon";
+
+  ["red","blue","black","white","green","yellow","pink","brown","grey","orange","purple"]
+    .forEach(c => { if (t.includes(c)) desiredColor = c; });
+
+  let filtered = [...wardrobe];
+
+  if (desiredCategory)
+    filtered = filtered.filter(i => i.category === desiredCategory);
+
+  if (desiredColor)
+    filtered = filtered.filter(i => i.color === desiredColor);
+
+  if (desiredSeason)
+    filtered = filtered.filter(i => i.season === desiredSeason);
+
+  // REMOVE recently worn outfits
+  const now = Date.now();
+  const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
+
+  filtered = filtered.filter(item => {
+    const record = outfitHistory.find(h => h.id === item.id);
+    return !record || now - record.date > TWO_WEEKS;
   });
 
-  appendMessage(
-    "bot",
-    "Hi! I’m your Drip Advisor stylist.\n" +
-    "1️⃣ Register / login above.\n" +
-    "2️⃣ Upload a few outfits into your wardrobe.\n" +
-    "3️⃣ Then ask me things like:\n" +
-    "   • Suggest a casual outfit\n" +
-    "   • Formal outfit for presentation\n" +
-    "   • Winter outfit\n" +
-    "   • Outfit with red colour"
-  );
+  if (filtered.length === 0) {
+    return "No suitable outfits found that aren’t recently worn.";
+  }
+
+  // TAKE UP TO 3
+  lastSuggestions = filtered.slice(0, 3);
+
+  const lines = [
+    "Here are your outfit suggestions 👗✨",
+    "",
+    lastSuggestions.map((i, idx) =>
+      `${idx + 1}️⃣ ${i.category.toUpperCase()}` +
+      (i.color ? ` in ${i.color}` : "") +
+      (i.season ? ` • ${i.season}` : "")
+    ).join("\n"),
+    "",
+    "Reply with:\n• I pick 1\n• I pick 2\n• I pick 3\nTo lock today’s outfit ✔️"
+  ].join("\n");
+
+  return {
+    text: lines,
+    images: lastSuggestions.map(i => i.url)
+  };
+}
+
+/* ---------------------------------------------------------
+   CHAT INPUT PROCESSOR
+--------------------------------------------------------- */
+function handleSend() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+
+  appendMessage("user", text);
+  chatInput.value = "";
+
+  setTimeout(() => {
+    const reply = buildOutfitReply(text);
+    appendMessage("bot", reply);
+  }, 300);
+}
+
+btnSend.addEventListener("click", handleSend);
+
+chatInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    handleSend();
+  }
+});
+
+/* ---------------------------------------------------------
+   INITIAL MESSAGE
+--------------------------------------------------------- */
+appendMessage("bot", greetingMessage());
+
 </script>
 </body>
 </html>
